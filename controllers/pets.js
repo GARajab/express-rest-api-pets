@@ -5,12 +5,12 @@ const express = require("express")
 const router = express.Router()
 
 router.post("/", async (req, res) => {
- try {
-   const createdPet = await Pet.create(req.body)
-   res.status(201).json(createdPet)
- } catch (error) {
-   res.status(500).json({ error: error.message })
- }
+  try {
+    const createdPet = await Pet.create(req.body)
+    res.status(201).json(createdPet)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
 })
 
 router.get("/", async (req, res) => {
@@ -25,19 +25,12 @@ router.get("/", async (req, res) => {
 router.get("/:petId", async (req, res) => {
   try {
     const foundPet = await Pet.findById(req.params.petId)
-    res.status(200).json(foundPet) // 200 OK
     if (!foundPet) {
-      res.status(404)
-      throw new Error("Pet not found.")
+      res.status(404).json({ error: "Pet not found." })
     }
     res.status(200).json(foundPet)
   } catch (error) {
-    if (res.statusCode === 404) {
-      res.json({ error: error.message })
-    } else {
-      // Add else statement to handle all other errors
-      res.json({ error: error.message })
-    }
+    res.status(500).json({ error: error.message })
   }
 })
 
@@ -47,29 +40,28 @@ router.put("/:petId", async (req, res) => {
       new: true,
     })
     if (!updatePet) {
-      res.status(400)
-      throw new Error("pet not found")
+      res.status(400).json("pet not found")
     }
     res.status(200).json(updatePet)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+router.delete("/:petId", async (req, res) => {
+  try {
+    const deletedPet = await Pet.findByIdAndDelete(req.params.petId)
+    res.status(200)
+    if (!deletedPet) {
+      res.status(404).json("Pet not found.")
+    }
+    res
   } catch (error) {
     if (res.statusCode === 404) {
       res.json({ error: error.message })
     } else {
       res.status(500).json({ error: error.message })
     }
-  }
-})
-
-router.delete("/:petId", async (req, res) => {
-  try {
-    let deletedPet = await Pet.findByIdAndDelete(req.params.petId)
-    res.status(200)
-    if (!deletedPet) {
-      res.status(404)
-      throw new Error("Pet not found.")
-    }
-  } catch (error) {
-    res.json(500).json({ error: error.message })
   }
 })
 
